@@ -89,3 +89,34 @@
 # weight = float(input("请输入您的体重（单位：公斤）："))
 # height = float(input("请输入您的身高（单位：米）："))
 # print(get_body_status(weight, height))
+
+# 需求：写一个函数 safe_int_convert(s)，
+# 接受一个字符串参数，尝试将其转换为整数并返回。
+# 如果转换失败，捕获 ValueError 并返回 None。调用这个函数，分别传入 "123"、"abc"、"45.6"，
+# 打印返回结果
+
+def safe_int_convert(s):
+    try:
+        return int(s)
+    except ValueError:
+        return None
+print(safe_int_convert("123"))  # 输出：123
+print(safe_int_convert("abc"))  # 输出：None
+print(safe_int_convert("45.6"))  # 输出：None
+
+#需求：写一个函数 divide_and_log(a, b)，接受两个数字，尝试计算 a / b。
+# 如果除数为0，捕获 ZeroDivisionError 并打印 "除数不能为0"。如果计算成功，用 else 打印计算结果。
+# 无论成功或失败，用 finally 打印 "运算结束"。
+def divide_and_log(a, b):
+    try:
+        result =  a / b
+        print("计算结果是：", result)
+    except ZeroDivisionError:
+        print("除数不能为0")
+    else:
+        print("计算成功")
+    finally:
+        print("运算结束")
+divide_and_log(10, 2)  # 输出：计算结果是： 5.0
+divide_and_log(10, 0)  # 输出：除数不能为0
+divide_and_log(10, 3)  # 输出：计算结果是： 3.3333333333333335
