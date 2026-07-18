@@ -120,3 +120,4 @@ def divide_and_log(a, b):
 divide_and_log(10, 2)  # 输出：计算结果是： 5.0
 divide_and_log(10, 0)  # 输出：除数不能为0
 divide_and_log(10, 3)  # 输出：计算结果是： 3.3333333333333335
+
