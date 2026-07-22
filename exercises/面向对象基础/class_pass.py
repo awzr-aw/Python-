@@ -149,7 +149,7 @@ class Person:
         self.citi = citi
         print(f"你好呀!我是{self.name}，今年{self.age}岁，性别是{self.gender},住在{self.citi}。")
 
-p1 = Person("张三", 20, "男", "北京")  # 创建对象时自动调用,
+p1 = Person("张三", 20, "男", "北京")  # 创建对象时自动调用,按顺序输入参数，也可以==赋值
 p2 = Person("李四", 25, "女", "上海")
 
 # 查看对象属性
