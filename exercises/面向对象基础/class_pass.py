@@ -136,24 +136,76 @@ class 类名:
         ...
 '''
 
-class Person:
-    # 定义实例方法
-    # def __init__(self):
-    #     print(f"你好呀!我是{self.name}，今年{self.age}岁，性别是{self.gender},住在{self.citi}。")
-    # 定义构造方法(实例方法)，定义实例属性最佳方式
-    def __init__(self, name, age, gender, citi):
-        print("我是构造方法，用于初始化对象的属性。")
-        self.name = name
-        self.age = age
-        self.gender = gender
-        self.citi = citi
-        print(f"你好呀!我是{self.name}，今年{self.age}岁，性别是{self.gender},住在{self.citi}。")
+# class Person:
+#     # 定义实例方法
+#     # def __init__(self):
+#     #     print(f"你好呀!我是{self.name}，今年{self.age}岁，性别是{self.gender},住在{self.citi}。")
+#     # 定义构造方法(实例方法)，定义实例属性最佳方式
+#     def __init__(self, name, age, gender, citi):
+#         print("我是构造方法，用于初始化对象的属性。")
+#         self.name = name
+#         self.age = age
+#         self.gender = gender
+#         self.citi = citi
+#         print(f"你好呀!我是{self.name}，今年{self.age}岁，性别是{self.gender},住在{self.citi}。")
 
-p1 = Person("张三", 20, "男", "北京")  # 创建对象时自动调用,按顺序输入参数，也可以==赋值
-p2 = Person("李四", 25, "女", "上海")
+# p1 = Person("张三", 20, "男", "北京")  # 创建对象时自动调用,按顺序输入参数，也可以==赋值
+# p2 = Person("李四", 25, "女", "上海")
 
-# 查看对象属性
-print(p1.name)  # 输出张三
-print(p1.age)  # 输出20
-print(p2.name)  # 输出张三
-print(p2.age)  # 输出20
+# # 查看对象属性
+# print(p1.name)  # 输出张三
+# print(p1.age)  # 输出20
+# print(p2.name)  # 输出张三
+# print(p2.age)  # 输出20
+
+# 其他魔术方法
+# 魔术方法也就是双划线，是以双下划线开头和结尾的方法
+# 魔术方法是Python语言中预定义的方法，用于实现特定的功能，例如：初始化对象、对象销毁、对象比较、对象序列化等
+# 魔术方法的使用需要遵循一定的规则和约定，具体规则和约定可以参考Python官方文档
+# 常用魔术方法：
+# 1.__str__()：自定义对象的“友好字符串”
+# 当我们直接使用print()打印对象时，Python会默认输出对象的“类型”和“内存地址”，这种格式对用户不友好
+# 通过使用__str__()方法，我们可以自定义对象的“友好字符串”，让用户更容易理解对象的内容
+# 语法:
+'''
+class 类名:
+    def __str__(self):
+        return "自定义对象的友好字符串"
+'''
+
+# class Person:
+#     def __init__(self,name,age):
+#         self.name = name
+#         self.age = age
+#     # 重写__str__()方法，自定义对象的“友好字符串”(注意，只能返回字符串类型)
+#     def __str__(self):
+#         return f"姓名:{self.name},年龄:{self.age}"
+#         # return 20 # 报错
+#     # 析构方法
+#     def __del__(self):
+#         print(f"对象{self.name}销毁，释放内存空间")
+    
+# 实例化对象
+# p1 = Person("张三", 20)
+# 通过print()打印对象时，自动调用__str__()方法，输出自定义的字符串信息
+# print(p1)
+# 输出自定义的字符串信息：姓名:张三,年龄:20
+
+# 2.__del__()：对象销毁方法
+# 当对象不再被引用时，Python会自动调用__del__()方法来销毁对象，释放内存空间，主要用于执行"收尾工作"
+# 语法:
+'''
+class 类名:
+    def __del__(self):
+        # 执行收尾工作
+        print("对象销毁，释放内存空间")
+'''
+
+# print(f"第一次调用p1对象{p1}")
+# print(f"第二次调用p1对象{p1}")
+# print(f"第三次调用p1对象{p1}")
+# print(f"第四次调用p1对象{p1}")# 后续没有对p1对象的引用，p1对象会被销毁，自动调用__del__()方法，输出对象销毁信息
+
+# 使用del关键字删除对象，手动销毁对象，释放内存空间
+# del p1 # 手动销毁对象,立即自动调用析构方法
+# print(f"第五次调用p1对象{p1}") # 报错，p1对象已经被销毁，无法访问
