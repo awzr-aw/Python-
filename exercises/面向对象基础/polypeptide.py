@@ -133,27 +133,63 @@ def 方法名(cls, 参数):
 # Person.set_country("英国")
 
 # 2.类方法中创建对象
-class Book:
-    def __init__(self, name, author, price):
-        self.name = name
-        self.author = author
-        self.price = price
+# class Book:
+#     def __init__(self, name, author, price):
+#         self.name = name
+#         self.author = author
+#         self.price = price
 
-    def __str__(self):
-        # 自定义对象的输出格式
-        return f"书名：{self.name}, 作者：{self.author}, 价格：{self.price}元"
-    @classmethod
-    def from_string(cls,book_info):
-        # 解析字符串，拆分出书名、作者、价格(分割后解包)
-        name,author,price = book_info.split("-")
-        price = float(price)  # 转换为浮点数
+#     def __str__(self):
+#         # 自定义对象的输出格式
+#         return f"书名：{self.name}, 作者：{self.author}, 价格：{self.price}元"
+#     @classmethod
+#     def from_string(cls,book_info):
+#         # 解析字符串，拆分出书名、作者、价格(分割后解包)
+#         name,author,price = book_info.split("-")
+#         price = float(price)  # 转换为浮点数
 
-        # 创建对象,类名(),使用cls(代表类本身)创建对象
-        book_obj = cls(name,author,price)
-        # 返回对象
-        return book_obj
+#         # 创建对象,类名(),使用cls(代表类本身)创建对象
+#         book_obj = cls(name,author,price)
+#         # 返回对象
+#         return book_obj
 
 
 # 假设在网上爬取一个信息
 # "Python入门-李四-100"
-print(Book.from_string("Python入门-李四-100"))
+# print(Book.from_string("Python入门-李四-100"))
+
+# 静态方法
+# 静态方法使用@staticmethod装饰器定义方法，并且不接收实例(self)或类本身(cls)作为第一个参数
+# 完全独立于类和实例的状态
+# 语法:
+'''
+@staticmethod
+def 方法名(形参)
+    方法体
+'''
+# class Person:
+    # def walk(self):
+    #     print("正在行走")
+    # 弊端1，方法有self，方法类没有使用self
+    # 2.实例方法必须通过对象调用，因此调用该方法必须创建对象
+    # @staticmethod
+    # def walk():
+    #     print("正在行走")
+# 静态方法的调用，推荐使用类名调用
+# Person.walk()
+# 对象.静态方法，虽然允许，但无意义
+
+# 求矩形的面积和周长
+class Rectangle:
+    # 求面积
+    @staticmethod
+    def get_area(length,width):
+        return length * width
+
+    # 求周长
+    @staticmethod
+    def git_permeter(length,width):
+        return (length + width) * 2
+
+print(Rectangle.get_area(5, 10))  # 输出：50
+print(Rectangle.git_permeter(5, 10))  # 输出：30
