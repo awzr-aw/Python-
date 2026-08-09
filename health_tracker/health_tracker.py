@@ -1,6 +1,6 @@
 """
 健康管理助手 v1.0
-功能：记录每日体重、查看历史记录、简单统计
+功能：记录、查看历史记录、简单统计
 数据存储在 weight_data.txt 文件中
 """
 
@@ -12,7 +12,7 @@ DATA_FILE = "weight_data.txt"
 
 # ==================== 加载历史数据 ====================
 def load_data():
-    """从文件加载体重记录，返回列表"""
+    """从文件加载记录，返回列表"""
     records = []
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
