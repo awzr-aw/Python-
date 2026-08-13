@@ -100,3 +100,28 @@ with语句会自动调用文件对象的close()方法，关闭文件'''
 #     print(f.seek(0)) # 移动文件指针到文件开头
 
 #     print(f.read()) # 如果不写seek()，则从文件末尾开始读取，内容为空
+
+# 文件定位操作
+# tell():返回文件指针当前位置
+# seek(偏移量, 参考点=0)：移动文件指针到指定位置
+# seek(0): 移动文件指针到文件开头
+# with open(r'exercises\weds\weds.txt', 'w+', encoding="utf-8") as f:
+#     f.write("aaa\n") # \n替换为-->\r\n
+#     f.write("bbb\n")
+#     f.write("ccc\n")
+#     # 移动前文件指针位置
+#     print(f.tell()) # 15
+#     # 移动后文件指针位置
+#     f.seek(0)
+#     print(f.tell()) # 0
+#     print(f.read())
+#     f.seek(10)
+
+
+# 2.可迭代写入对象
+# writerlines():用于批量写入多行内容，接受一个可迭代的字符串序列(如列表，元组，生成器等)作为参数
+# lines = ["aaa\n", "bbb\n", "ccc\n", "ddd\n"]
+# with open(r'exercises\weds\weds.txt', 'w+', encoding="utf-8") as f:
+#     f.writelines(lines) # 批量写入多行内容
+
+'''以上内容在没有更改文件名时写的，如果要运行请更改路径'''
