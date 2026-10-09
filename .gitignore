@@ -1,3 +1,38 @@
+# ===== Python =====
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+.Python
+
+# ===== 测试与覆盖率 =====
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# ===== 构建产物 =====
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
 .DS_Store
+Thumbs.db
+*.swp
+
+# ===== 运行期生成的文件（由程序首次运行时创建，不入库） =====
+python/projects/health_tracker/weight_data.txt
+
+# ===== 本地临时/调试文件 =====
+debug.log
+.dsh-scratch/
