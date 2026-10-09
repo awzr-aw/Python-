@@ -101,6 +101,13 @@ class TestSmokeTestTool(unittest.TestCase):
         for banned in ("import pytest", "import requests", "import numpy"):
             self.assertNotIn(banned, source)
 
+    def test_smoke_test_import_phase_passes(self):
+        """阶段三：仓库内所有模块都能被导入，且 import 不产生 stdout。"""
+        smoke = load_module_from_path("_repo_smoke_test_imports", SMOKE_TEST)
+        files = list(smoke.iter_py_files(REPO_ROOT))
+        failures = smoke.phase_imports(files)
+        self.assertEqual([], failures, f"模块导入检查失败: {failures}")
+
 
 class TestHealthTrackerContract(unittest.TestCase):
     """health_tracker 的 API 契约（供 smoke test 与 README 引用）。"""

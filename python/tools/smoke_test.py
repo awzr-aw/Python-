@@ -1,17 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""仓库自检脚本：语法编译检查 + 可运行示例逐个执行。
+"""仓库自检脚本（三阶段）：语法编译检查 → 可运行示例逐个执行 → 模块导入检查。
 
 用法（在仓库根目录或任意目录均可）：
     python python/tools/smoke_test.py
+
+- 阶段一：对仓库内所有 .py 做语法编译检查（用 compile()，不落 .pyc）
+- 阶段二：把「可运行清单」里的脚本用子进程逐个跑一遍，要求退出码 0
+- 阶段三：把不作为脚本运行的模块 import 一次，要求不报错且没有 stdout 输出
 
 退出码：全部通过为 0，存在失败或缺失为 1。
 """
 
 from __future__ import annotations
 
+import contextlib
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
+import uuid
 from pathlib import Path
 
 # python/tools/smoke_test.py -> python/tools -> python -> 仓库根
@@ -51,6 +60,47 @@ RUNNABLE = [
 
 TIMEOUT_SECONDS = 30
 STDERR_TAIL_LINES = 15
+
+# 阶段三在子进程里执行的导入检查脚本：先 import，再断言没有产生 stdout 输出
+IMPORT_CHECK_SOURCE = """\
+import importlib.util
+import pathlib
+import sys
+
+target = pathlib.Path(sys.argv[1])
+spec = importlib.util.spec_from_file_location("smoke_target", target)
+module = importlib.util.module_from_spec(spec)
+sys.modules["smoke_target"] = module
+spec.loader.exec_module(module)
+sys.stdout.write("")
+"""
+
+# 兜底临时目录：仅当平台临时目录不可写时才使用（受限沙箱的常见情况）
+_SCRATCH_DIR = REPO_ROOT / ".dsh-scratch"
+
+
+@contextlib.contextmanager
+def _temp_dir():
+    """优先用标准库临时目录；不可写时回退到仓库内被忽略的 .dsh-scratch。"""
+    platform_ok = True
+    try:
+        with tempfile.TemporaryDirectory(prefix="repo-smoke-probe-") as probe_dir:
+            Path(probe_dir, "probe.txt").write_text("ok", encoding="utf-8")
+    except OSError:
+        platform_ok = False
+
+    if platform_ok:
+        with tempfile.TemporaryDirectory(prefix="repo-smoke-") as path:
+            yield path
+        return
+
+    _SCRATCH_DIR.mkdir(parents=True, exist_ok=True)
+    path = _SCRATCH_DIR / f"smoke-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+    path.mkdir()
+    try:
+        yield str(path)
+    finally:
+        shutil.rmtree(path, ignore_errors=True)
 
 
 def configure_stdio() -> None:
@@ -144,6 +194,62 @@ def phase_run() -> tuple[list[str], list[tuple[str, str]], list[str]]:
     return passed, failed, missing
 
 
+def phase_imports(py_files: list[Path]) -> list[tuple[str, str]]:
+    """阶段三：把「不作为脚本运行」的模块单独导入一次，确认 import 时不报错。
+
+    典型价值是 project 里的库模块（units/analyzer/health_tracker…）：
+    它们不在可运行清单里，但 import 出错会让项目整体不可用。
+    在一个临时目录里执行，避免 import 过程中在仓库内留下任何文件。
+    """
+    runnable = {rel.replace("\\", "/") for rel in RUNNABLE}
+    candidates = []
+    for path in py_files:
+        rel = path.relative_to(REPO_ROOT).as_posix()
+        if rel in runnable:
+            continue
+        if path.name == "__init__.py":
+            continue
+        candidates.append(rel)
+
+    failures: list[tuple[str, str]] = []
+    if not candidates:
+        return failures
+
+    with _temp_dir() as tmp:
+        for rel in candidates:
+            env = dict(os.environ)
+            module_dir = (REPO_ROOT / rel).parent
+            env["PYTHONPATH"] = os.pathsep.join(
+                [str(REPO_ROOT), str(module_dir)]
+            )
+            try:
+                proc = subprocess.run(
+                    [sys.executable, "-c", IMPORT_CHECK_SOURCE, str(REPO_ROOT / rel)],
+                    cwd=tmp,
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    timeout=TIMEOUT_SECONDS,
+                    env=env,
+                )
+            except subprocess.TimeoutExpired:
+                failures.append((rel, f"导入超时（>{TIMEOUT_SECONDS}s）"))
+                continue
+            except OSError as exc:
+                failures.append((rel, f"启动子进程失败: {exc}"))
+                continue
+
+            if proc.returncode != 0:
+                stderr = proc.stderr.decode("utf-8", errors="replace").strip().splitlines()
+                tail = "\n".join(stderr[-STDERR_TAIL_LINES:]) if stderr else "(无 stderr 输出)"
+                failures.append((rel, f"import 失败（退出码 {proc.returncode}）\n{tail}"))
+                continue
+
+            output = proc.stdout.decode("utf-8", errors="replace").strip()
+            if output:
+                failures.append((rel, f"import 时产生了 stdout 输出：{output!r}"))
+    return failures
+
+
 def main() -> int:
     configure_stdio()
     print("=" * 64)
@@ -169,6 +275,14 @@ def main() -> int:
     for rel, reason in failed:
         print(f"  [失败] {rel}: {reason}")
 
+    import_failures = phase_imports(py_files)
+    print("\n[阶段三] 模块导入检查：不在可运行清单里的 .py 逐个 import（临时目录内执行）")
+    if import_failures:
+        for rel, reason in import_failures:
+            print(f"  [失败] {rel}: {reason}")
+    else:
+        print("  [OK] 所有模块导入正常，且 import 时没有 stdout 输出")
+
     print("\n" + "=" * 64)
     print("汇总")
     print(f"  语法检查：{len(py_files) - len(syntax_failures)}/{len(py_files)} 通过")
@@ -176,7 +290,8 @@ def main() -> int:
         f"  运行清单：总数 {len(RUNNABLE)} | 通过 {len(passed)} | "
         f"失败 {len(failed)} | 缺失 {len(missing)}"
     )
-    ok = not syntax_failures and not failed and not missing
+    print(f"  导入检查：失败 {len(import_failures)}")
+    ok = not syntax_failures and not failed and not missing and not import_failures
     print(f"  结论：{'全部通过' if ok else '未通过'}")
     print("=" * 64)
     return 0 if ok else 1
